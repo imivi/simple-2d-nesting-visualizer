@@ -102,44 +102,27 @@ export default function Controls({ color }: Props) {
     function handleInput(text: string, dim: "x"|"y"|"z") {
         // const { x, y, z } = size
 
-        const newSize = { ...size }
-        
-        if(dim === "x") {
-            setA(text)
-            newSize.x = Number(text) || newSize.x
-            // setSize({ x: Number(text) || x, y, z })
-        }
-        else if(dim === "y") {
-            setB(text)
-            newSize.y = Number(text) || newSize.y
-            // setSize({ y: Number(text) || y, x, z })
-        }
-        else if(dim === "z") {
-            setC(text)
-            newSize.z = Number(text) || newSize.z
-            // setSize({ z: Number(text) || z, x, y })
+        switch (dim) {
+            case "x": setA(text); break;
+            case "y": setB(text); break;
+            case "z": setC(text); break;
+            default: break;
         }
         
-        const [ newx, newy, newz ] = getSizeFromOrientation(newSize.x, newSize.y, newSize.z, orientation)
-        setSize(new Vector3(newx, newy, newz))
+        const newValue = Number(text)
 
-        // const [x2, y2, z2] = [a,b,c].map(n => Number(n) || 1)
-        // setSize({
-        //     x: x2 || size.x,
-        //     y: y2 || size.y,
-        //     z: z2 || size.z,
-        // })
+        const newSize = {
+            x: Number(a) || 1,
+            y: Number(b) || 1,
+            z: Number(c) || 1,
+            [dim]: newValue || 1,
+        }
+        
+        const sorted_size = getSizeFromOrientation(newSize.x, newSize.y, newSize.z, orientation)
+        // console.log(sorted_size)
+        setSize(new Vector3(...sorted_size))
     }
 
-    // function handleInput(text: string, dim: "a"|"b"|"c") {
-    //     const value = Number(text)
-    //     if(value) {
-
-    //     }
-    //     if(dim === "a") {
-
-    //     }
-    // }
     
     function handleSetOrientation(new_orientation: Orientation) {
         // const [x,y,z] = [a,b,c].map(n => Number(n) || 1)
@@ -155,7 +138,7 @@ export default function Controls({ color }: Props) {
             <h2>Controls</h2>
 
             <div className="inputs">
-                <label>
+                {/* <label>
                     <span>dim. A</span>
                     <input type="text" value={ a } onChange={ (e) => handleInput(e.target.value, "x") }/>
                 </label>
@@ -166,7 +149,15 @@ export default function Controls({ color }: Props) {
                 <label>
                     <span>dim. C</span>
                     <input type="text" value={ c } onChange={ (e) => handleInput(e.target.value, "z") }/>
-                </label>
+                </label> */}
+
+                <label>Dim.</label>
+                <input type="text" value={ a } onChange={ (e) => handleInput(e.target.value, "x") }/>
+                <span>x</span>
+                <input type="text" value={ b } onChange={ (e) => handleInput(e.target.value, "y") }/>
+                <span>x</span>
+                <input type="text" value={ c } onChange={ (e) => handleInput(e.target.value, "z") }/>
+
             </div>
 
             <div className="rotate-icons">
@@ -186,7 +177,7 @@ export default function Controls({ color }: Props) {
             </div>
 
             <p>{ orientation }</p>
-            <p>store.size: { [size.x, size.y, size.z].toString() }</p>
+            <p>store.size: { [size.x, size.y, size.z].join(" x ") }</p>
 
         </div>
     )
@@ -211,6 +202,7 @@ const style = css`
     .inputs {
         display: flex;
         gap: 10px;
+        place-items: center;
     }
 
     label {
