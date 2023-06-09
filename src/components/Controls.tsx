@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useState } from 'react'
 import { css } from "@emotion/react"
 import { useNestingStore } from '../store/store'
+import { Vector3 } from 'three'
 
 
 type Orientation =
@@ -98,20 +99,30 @@ export default function Controls({ color }: Props) {
 
 
     // Update the size when the inputs change
-    function handleInput(text: string, dim: "a"|"b"|"c") {
-        const { x, y, z } = size
-        if(dim === "a") {
+    function handleInput(text: string, dim: "x"|"y"|"z") {
+        // const { x, y, z } = size
+
+        const newSize = { ...size }
+        
+        if(dim === "x") {
             setA(text)
-            setSize({ x: Number(text) || x, y, z })
+            newSize.x = Number(text) || newSize.x
+            // setSize({ x: Number(text) || x, y, z })
         }
-        else if(dim === "b") {
+        else if(dim === "y") {
             setB(text)
-            setSize({ y: Number(text) || y, x, z })
+            newSize.y = Number(text) || newSize.y
+            // setSize({ y: Number(text) || y, x, z })
         }
-        else if(dim === "c") {
+        else if(dim === "z") {
             setC(text)
-            setSize({ z: Number(text) || z, x, y })
+            newSize.z = Number(text) || newSize.z
+            // setSize({ z: Number(text) || z, x, y })
         }
+        
+        const [ newx, newy, newz ] = getSizeFromOrientation(newSize.x, newSize.y, newSize.z, orientation)
+        setSize(new Vector3(newx, newy, newz))
+
         // const [x2, y2, z2] = [a,b,c].map(n => Number(n) || 1)
         // setSize({
         //     x: x2 || size.x,
@@ -130,13 +141,13 @@ export default function Controls({ color }: Props) {
     //     }
     // }
     
-    function handleSetOrientation(orientation: Orientation) {
+    function handleSetOrientation(new_orientation: Orientation) {
         // const [x,y,z] = [a,b,c].map(n => Number(n) || 1)
         // const { x,y,z } = size
-        const [ x, y, z ] = getSizeFromOrientation(size.x, size.y, size.z, orientation)
-        setSize({ x,y,z })
+        const [ x, y, z ] = getSizeFromOrientation(size.x, size.y, size.z, new_orientation)
+        setSize(new Vector3(x,y,z))
         // const { orientation, x, y, z } = getOrientation
-        setOrientation(orientation)
+        setOrientation(new_orientation)
     }
 
     return (
@@ -146,28 +157,30 @@ export default function Controls({ color }: Props) {
             <div className="inputs">
                 <label>
                     <span>dim. A</span>
-                    <input type="text" value={ a } onChange={ (e) => handleInput(e.target.value, "a") }/>
+                    <input type="text" value={ a } onChange={ (e) => handleInput(e.target.value, "x") }/>
                 </label>
                 <label>
                     <span>dim. B</span>
-                    <input type="text" value={ b } onChange={ (e) => handleInput(e.target.value, "b") }/>
+                    <input type="text" value={ b } onChange={ (e) => handleInput(e.target.value, "y") }/>
                 </label>
                 <label>
                     <span>dim. C</span>
-                    <input type="text" value={ c } onChange={ (e) => handleInput(e.target.value, "c") }/>
+                    <input type="text" value={ c } onChange={ (e) => handleInput(e.target.value, "z") }/>
                 </label>
             </div>
 
             <div className="rotate-icons">
                 {
                     Object.entries(icons).map(([icon_orientation,url]) => (
-                        <img
-                            onClick={ () => handleSetOrientation(icon_orientation as Orientation) }
-                            key={ url }
-                            src={ "/icons/"+url }
-                            alt={ url }
-                            data-active={ orientation === icon_orientation }
-                        />
+                        <div key={ url }>
+                            <img
+                                onClick={ () => handleSetOrientation(icon_orientation as Orientation) }
+                                src={ "/icons/"+url }
+                                alt={ url }
+                                data-active={ orientation === icon_orientation }
+                            />
+                            { orientation === icon_orientation && <span className='icon-selected'>✓</span> }
+                        </div>
                     ))
                 }
             </div>
@@ -227,21 +240,54 @@ const style = css`
         grid-template-columns: 1fr 1fr 1fr;
         gap: 10px;
 
+        & > div {
+            position: relative;
+        }
+
+        .icon-selected {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            z-index: 10;
+            background-color: white;
+            color: black;
+            display: flex;
+            place-content: center;
+            place-items: center;
+            border-radius: 50%;
+        }
+
         img {
             aspect-ratio: 1;
             width: 100%;
             height: 100%;
-            background-color: #999;
+            background-color: #ccc;
             border-radius: 5px;
             transition: background-color 50ms;
+            position: relative;
             cursor: pointer;
+            border: 2px solid transparent;
+
+            /* &[data-active=true]::after {
+                content: "✓aaaa";
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                width: 10rem;
+                height: 10rem;
+                z-index: 10;
+                background-color: white;
+            } */
 
             &[data-active=true],
             &:hover {
-                background-color: #eee;
+                background-color: #9cbae2;
+                border-color: dodgerblue;
             }
             &:active {
-                background-color: #bbb;
+                background-color: #ddd;
             }
         }
     }
