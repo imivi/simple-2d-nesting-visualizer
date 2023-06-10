@@ -19,6 +19,9 @@ type Store = {
 
     visibleBlocks: number,
     setVisibleBlocks: (n: number) => void,
+
+    requiredBlocks: number,
+    setRequiredBlocks: (n: number) => void,
 }
 
 // https://github.com/pmndrs/zustand#typescript-usage
@@ -34,6 +37,9 @@ export const useNestingStore = create<Store>()(
 
                 visibleBlocks: 1,
                 setVisibleBlocks: (n) => set({ visibleBlocks: n }),
+
+                requiredBlocks: 1,
+                setRequiredBlocks: (n) => set({ requiredBlocks: n }),
             }),
             { name: "nesting-store" }
         )

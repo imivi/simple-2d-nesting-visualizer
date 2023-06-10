@@ -84,19 +84,22 @@ type Props = {
 
 export default function Controls({ boxCount }: Props) {
 
-    const [a, setA] = useState("1")
-    const [b, setB] = useState("1")
-    const [c, setC] = useState("1")
-    const [orientation, setOrientation] = useState<Orientation>("flat")
-
     const size = useNestingStore(store => store.size)
     const setSize = useNestingStore(store => store.setSize)
+
+    const [a, setA] = useState(size.x.toString())
+    const [b, setB] = useState(size.z.toString())
+    const [c, setC] = useState(size.y.toString())
+    const [orientation, setOrientation] = useState<Orientation>("flat")
 
     const containerSize    = useNestingStore(store => store.containerSize)
     const setContainerSize = useNestingStore(store => store.setContainerSize)
 
     const visibleBlocks    = useNestingStore(store => store.visibleBlocks)
     const setVisibleBlocks = useNestingStore(store => store.setVisibleBlocks)
+
+    // const requiredBlocks    = useNestingStore(store => store.requiredBlocks)
+    const setRequiredBlocks = useNestingStore(store => store.setRequiredBlocks)
 
     // const orientation = getOrientation(Number(a), Number(b), Number(c))
 
@@ -149,13 +152,18 @@ export default function Controls({ boxCount }: Props) {
         <div css={ style }>
             <h2>Simple 2D nesting</h2>
 
+            <label>
+                <span>Required block number</span>
+                <NumberInput defaultValue={ 1 } onValidChange={ (n) => setRequiredBlocks(n) }/>
+            </label>
+
             <div className="inputs">
                 <label>Box</label>
-                <NumberInput defaultValue={ containerSize.x.toString() } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, x: n })) }/>
+                <NumberInput defaultValue={ containerSize.x } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, x: n })) }/>
                 <span>x</span>
-                <NumberInput defaultValue={ containerSize.z.toString() } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, z: n })) }/>
+                <NumberInput defaultValue={ containerSize.z } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, z: n })) }/>
                 <span>x</span>
-                <NumberInput defaultValue={ containerSize.y.toString() } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, y: n })) }/>
+                <NumberInput defaultValue={ containerSize.y } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, y: n })) }/>
 
                 <label>Shape</label>
                 <input type="text" value={ a } onChange={ (e) => handleInput(e.target.value, "x") }/>

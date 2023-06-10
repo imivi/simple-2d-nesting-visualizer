@@ -3,7 +3,7 @@ import { css } from "@emotion/react"
 
 
 type Props = {
-    defaultValue: string,
+    defaultValue: number,
     onValidChange: (num: number) => unknown,
 } & HTMLAttributes<HTMLInputElement>
 
@@ -11,7 +11,7 @@ export default function NumberInput(props: Props) {
 
     const { defaultValue, onValidChange } = props
 
-    const [textValue, setTextValue] = useState(defaultValue)
+    const [textValue, setTextValue] = useState(defaultValue.toString())
 
     // Update the size when the inputs change
     function handleInput(text: string) {
