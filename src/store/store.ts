@@ -16,6 +16,9 @@ type Store = {
 
     containerSize: Vector3,
     setContainerSize: (v: Vector3) => void,
+
+    visibleBlocks: number,
+    setVisibleBlocks: (n: number) => void,
 }
 
 // https://github.com/pmndrs/zustand#typescript-usage
@@ -28,6 +31,9 @@ export const useNestingStore = create<Store>()(
 
                 containerSize: new Vector3(20, 0.1, 10),
                 setContainerSize: (containerSize) => set({ containerSize }),
+
+                visibleBlocks: 1,
+                setVisibleBlocks: (n) => set({ visibleBlocks: n }),
             }),
             { name: "nesting-store" }
         )

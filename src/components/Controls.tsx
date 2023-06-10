@@ -79,10 +79,10 @@ function V3(v: { x:number, y: number, z:number }) {
 }
 
 type Props = {
-    color?: string,
+    boxCount: number,
 }
 
-export default function Controls({ color }: Props) {
+export default function Controls({ boxCount }: Props) {
 
     const [a, setA] = useState("1")
     const [b, setB] = useState("1")
@@ -92,8 +92,11 @@ export default function Controls({ color }: Props) {
     const size = useNestingStore(store => store.size)
     const setSize = useNestingStore(store => store.setSize)
 
-    const containerSize = useNestingStore(store => store.containerSize)
+    const containerSize    = useNestingStore(store => store.containerSize)
     const setContainerSize = useNestingStore(store => store.setContainerSize)
+
+    const visibleBlocks    = useNestingStore(store => store.visibleBlocks)
+    const setVisibleBlocks = useNestingStore(store => store.setVisibleBlocks)
 
     // const orientation = getOrientation(Number(a), Number(b), Number(c))
 
@@ -144,7 +147,7 @@ export default function Controls({ color }: Props) {
 
     return (
         <div css={ style }>
-            <h2>Controls</h2>
+            <h2>Simple 2D nesting</h2>
 
             <div className="inputs">
                 <label>Box</label>
@@ -177,6 +180,9 @@ export default function Controls({ color }: Props) {
                     ))
                 }
             </div>
+
+            <p>Visible blocks: { Math.min(visibleBlocks,boxCount) } / { boxCount }</p>
+            <input type="range" min={ 1 } max={ boxCount } value={ Math.min(visibleBlocks,boxCount) } onChange={ (e) => setVisibleBlocks(Number(e.target.value)) }/>
 
             <p>{ orientation }</p>
             <p>store.size: { [size.x, size.y, size.z].join(" x ") }</p>

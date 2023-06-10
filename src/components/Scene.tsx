@@ -5,6 +5,7 @@ import { OrbitControls } from '@react-three/drei'
 import { useNestingStore } from '../store/store'
 import * as THREE from "three"
 import { fill } from '../utils/fill'
+import Controls from './Controls'
 
 
 const ZERO = new THREE.Vector3(0,0,0)
@@ -18,15 +19,20 @@ export default function Scene() {
 
     // const boxSize = new THREE.Vector3(20, 0.1, 10)
     const boxSize = useNestingStore(store => store.containerSize)
+    const { x=10, y=1, z=10 } = boxSize
+    const defaultBoxSize = new THREE.Vector3(x,y,z)
     // const boxOffset = boxSize.map(dim => dim/2) as [number,number,number]
     // const boxOffset = boxSize.clone().divideScalar(2)
-
+    
+    const visibleBlocks = useNestingStore(store => store.visibleBlocks)
     // const controlsRef = useRef()
 
     const size = useNestingStore(store => store.size)
     const gridSize = Math.max(boxSize.x, boxSize.z) * 2
 
     const cubeMaterial = new THREE.MeshNormalMaterial()
+    const transparentMaterial = new THREE.MeshNormalMaterial({ transparent: true })
+    transparentMaterial.opacity = 0.3
     const boxGeometry  = new THREE.BoxGeometry(size.x, size.z, size.y)
 
     const boxes = useMemo(() => {
@@ -41,7 +47,9 @@ export default function Scene() {
     const test = false
     
 
-    return (
+    return <>
+        <Controls boxCount={ boxes.length }/>
+
         <Canvas frameloop="demand">
             <ambientLight intensity={ 2 }/>
             <spotLight position={[1, 6, 1.5]} angle={0.2} penumbra={1} intensity={2.5} castShadow shadow-mapSize={[2048, 2048]} />
@@ -56,7 +64,7 @@ export default function Scene() {
                     {/* <Cube position={ ZERO } size={ boxSize }/> */}
                     <CubeMesh
                         position={ new THREE.Vector3(0, 0, 0) }
-                        size={ boxSize }
+                        size={ defaultBoxSize }
                         geometry={ new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z) }
                         material={ cubeMaterial }
                     />
@@ -75,7 +83,7 @@ export default function Scene() {
                                         key={ i }
                                         box={ box }
                                         height={ size.z + boxSize.y }
-                                        material={ cubeMaterial }
+                                        material={ i < visibleBlocks ? cubeMaterial : transparentMaterial }
                                     />
                                 ))
                             }
@@ -110,7 +118,7 @@ export default function Scene() {
 
             </Suspense>
         </Canvas>
-    )
+    </>
 }
 
 
@@ -128,6 +136,8 @@ function CubeMesh({ size, position, material, geometry }: CubeMeshProps) {
     // const { x:width, y:height, z:depth } = size
 
     const offset = size.clone().divideScalar(2)
+    // const offset = size
+
     // const offset = new THREE.Vector3(size.x/2, size.y/2, size.z/2)
 
     // console.log({ position, size, offset })

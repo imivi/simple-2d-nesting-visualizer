@@ -9,7 +9,6 @@ export default function App() {
         <>
             <main css={ style }>
                 {/* <h1>Nester</h1> */}
-                <Controls/>
                 <Scene/>
             </main>
         </>
