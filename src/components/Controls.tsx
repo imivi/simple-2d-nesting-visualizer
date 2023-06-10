@@ -194,19 +194,21 @@ export default function Controls({ boxCount }: Props) {
 
             
             {/* Slider to select visible blocks */}
-            <p>Block limit: { showAllBlocks ? boxCount : Math.min(visibleBlocks,boxCount) } / { boxCount }</p>
-            <input
-                type="range"
-                min={ 1 }
-                max={ boxCount }
-                value={ showAllBlocks ? boxCount : Math.min(visibleBlocks,boxCount) }
-                onChange={ (e) => { setVisibleBlocks(Number(e.target.value)); setShowAllBlocks(false) } }
-            />
-
             <div>
-                <input type="checkbox" checked={ showAllBlocks } onChange={ () => setShowAllBlocks(!showAllBlocks) } />
-                <label>show all</label>
+                <div>Block limit: { showAllBlocks ? boxCount : Math.min(visibleBlocks,boxCount) } / { boxCount }</div>
+                <input
+                    type="range"
+                    min={ 1 }
+                    max={ boxCount }
+                    value={ showAllBlocks ? boxCount : Math.min(visibleBlocks,boxCount) }
+                    onChange={ (e) => { setVisibleBlocks(Number(e.target.value)); setShowAllBlocks(false) } }
+                />
+                <label className='show-all-blocks'>
+                    <input type="checkbox" checked={ showAllBlocks } onChange={ () => setShowAllBlocks(!showAllBlocks) } />
+                    <span>show all blocks</span>
+                </label>
             </div>
+
 
 
             <p>{ orientation }</p>
@@ -245,6 +247,14 @@ const style = css`
         display: flex;
         gap: 5px;
         place-items: center;
+    }
+
+    label.show-all-blocks {
+
+        input[type=checkbox] {
+            display: inline-block;
+            width: 1rem;
+        }
     }
 
     input {
