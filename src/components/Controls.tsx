@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { css } from "@emotion/react"
 import { useNestingStore } from '../store/store'
 import { Vector3 } from 'three'
@@ -102,7 +102,7 @@ export default function Controls({ boxCount }: Props) {
     const setVisibleBlocks = useNestingStore(store => store.setVisibleBlocks)
 
     // const requiredBlocks    = useNestingStore(store => store.requiredBlocks)
-    const setRequiredBlocks = useNestingStore(store => store.setRequiredBlocks)
+    // const setRequiredBlocks = useNestingStore(store => store.setRequiredBlocks)
 
     // const orientation = getOrientation(Number(a), Number(b), Number(c))
 
@@ -155,10 +155,10 @@ export default function Controls({ boxCount }: Props) {
         <div css={ style }>
             <h2>Simple 2D nesting</h2>
 
-            <label>
+            {/* <label>
                 <span>Required block number</span>
                 <NumberInput defaultValue={ 1 } onValidChange={ (n) => setRequiredBlocks(n) }/>
-            </label>
+            </label> */}
 
             <div className="inputs">
                 <label>Box</label>

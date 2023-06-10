@@ -18,7 +18,7 @@ const ZERO = new THREE.Vector3(0,0,0)
 export default function Scene() {
     // const [count, setCount] = useState(0)
 
-    const requiredBlocks = useNestingStore(store => store.requiredBlocks)
+    // const requiredBlocks = useNestingStore(store => store.requiredBlocks)
 
     // const boxSize = new THREE.Vector3(20, 0.1, 10)
     const boxSize = useNestingStore(store => store.containerSize)
@@ -211,7 +211,7 @@ function Block({ box, height, material, geometry }: BlockProps) {
 }
 
 
-
+/*
 type BoxProps = {
     box: THREE.Box2,
     height: number,
@@ -244,7 +244,7 @@ function Box({ box, height, material }: BoxProps) {
     
     return <mesh position={ position } material={ material } geometry={ geometry }/>
 }
-
+*/
 
 
 

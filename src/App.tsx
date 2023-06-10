@@ -1,6 +1,5 @@
 import { css } from "@emotion/react"
 import Scene from "./components/Scene"
-import Controls from "./components/Controls"
 
 export default function App() {
     // const [count, setCount] = useState(0)
