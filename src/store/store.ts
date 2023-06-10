@@ -13,6 +13,9 @@ import { Vector3 } from "three"
 type Store = {
     size: Vector3,
     setSize: (v: Vector3) => void,
+
+    containerSize: Vector3,
+    setContainerSize: (v: Vector3) => void,
 }
 
 // https://github.com/pmndrs/zustand#typescript-usage
@@ -21,7 +24,10 @@ export const useNestingStore = create<Store>()(
         persist(
             (set) => ({
                 size: new Vector3(30, 10, 5),
-                setSize: (size) => set({ size })
+                setSize: (size) => set({ size }),
+
+                containerSize: new Vector3(20, 0.1, 10),
+                setContainerSize: (containerSize) => set({ containerSize }),
             }),
             { name: "nesting-store" }
         )

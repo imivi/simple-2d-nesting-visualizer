@@ -2,6 +2,7 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { css } from "@emotion/react"
 import { useNestingStore } from '../store/store'
 import { Vector3 } from 'three'
+import NumberInput from './NumberInput'
 
 
 type Orientation =
@@ -72,6 +73,11 @@ function getSizeFromOrientation(x: number, y: number, z: number, orientation: Or
 }
 
 
+function V3(v: { x:number, y: number, z:number }) {
+    const { x, y, z } = v
+    return new Vector3(x,y,z)
+}
+
 type Props = {
     color?: string,
 }
@@ -85,6 +91,9 @@ export default function Controls({ color }: Props) {
 
     const size = useNestingStore(store => store.size)
     const setSize = useNestingStore(store => store.setSize)
+
+    const containerSize = useNestingStore(store => store.containerSize)
+    const setContainerSize = useNestingStore(store => store.setContainerSize)
 
     // const orientation = getOrientation(Number(a), Number(b), Number(c))
 
@@ -138,26 +147,19 @@ export default function Controls({ color }: Props) {
             <h2>Controls</h2>
 
             <div className="inputs">
-                {/* <label>
-                    <span>dim. A</span>
-                    <input type="text" value={ a } onChange={ (e) => handleInput(e.target.value, "x") }/>
-                </label>
-                <label>
-                    <span>dim. B</span>
-                    <input type="text" value={ b } onChange={ (e) => handleInput(e.target.value, "y") }/>
-                </label>
-                <label>
-                    <span>dim. C</span>
-                    <input type="text" value={ c } onChange={ (e) => handleInput(e.target.value, "z") }/>
-                </label> */}
+                <label>Box</label>
+                <NumberInput defaultValue={ containerSize.x.toString() } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, x: n })) }/>
+                <span>x</span>
+                <NumberInput defaultValue={ containerSize.z.toString() } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, z: n })) }/>
+                <span>x</span>
+                <NumberInput defaultValue={ containerSize.y.toString() } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, y: n })) }/>
 
-                <label>Dim.</label>
+                <label>Shape</label>
                 <input type="text" value={ a } onChange={ (e) => handleInput(e.target.value, "x") }/>
                 <span>x</span>
                 <input type="text" value={ b } onChange={ (e) => handleInput(e.target.value, "y") }/>
                 <span>x</span>
                 <input type="text" value={ c } onChange={ (e) => handleInput(e.target.value, "z") }/>
-
             </div>
 
             <div className="rotate-icons">
@@ -200,9 +202,12 @@ const style = css`
     gap: 1rem;
 
     .inputs {
-        display: flex;
+        /* display: flex; */
         gap: 10px;
         place-items: center;
+        display: grid;
+        grid-template-columns: 1fr 1fr auto 1fr auto 1fr;
+        row-gap: 1rem;
     }
 
     label {
@@ -225,6 +230,8 @@ const style = css`
         outline: none;
         border-radius: 5px;
         text-align: center;
+        color: dodgerblue;
+        font-weight: bold;
     }
 
     .rotate-icons {

@@ -9,17 +9,17 @@ import { Box2, Vector2 } from "three"
  */
 export function fill(surface: Box2, size: Vector2): Box2[] {
 
-    console.log('Analyzing surface:', surface)
+    // console.info('Analyzing surface:', surface)
 
     const start = surface.min
     const end   = surface.max
 
-    const rows_and_cols = end.sub(start).divide(size)
+    const rows_and_cols = end.clone().sub(start).divide(size)
     
     const rows = Math.floor(rows_and_cols.x)
     const cols = Math.floor(rows_and_cols.y)
 
-    const new_end = new Vector2(rows,cols).multiply(size)
+    const new_end = new Vector2(rows,cols).clone().multiply(size)
 
     const surface_filled = new Box2(
         start,
@@ -29,13 +29,13 @@ export function fill(surface: Box2, size: Vector2): Box2[] {
     const positions: Box2[] = []
     for(let i_row=0; i_row<rows; i_row++) {
         for(let i_col=0; i_col<cols; i_col++) {
-            const item_start_position = start.add(new Vector2(i_row,i_col).multiply(size))
-            const position = new Box2(item_start_position, item_start_position.add(size))
+            const item_start_position = start.clone().add(new Vector2(i_row,i_col).clone().multiply(size))
+            const position = new Box2(item_start_position, item_start_position.clone().add(size))
             positions.push(position)
         }
     }
     
-    const count = positions.length
+    // const count = positions.length
 
 
     // If the shape is horizontal, partition horizontally
@@ -51,16 +51,16 @@ export function fill(surface: Box2, size: Vector2): Box2[] {
     )
 
     if(isHorizontal(size) && fits(surface_leftover_x, rotate(size))) {
-        console.log(`Returning ${count} (${rows}x${cols}) leftover x ${surface_leftover_x}`)
+        // console.info(`Returning ${count} (${rows}x${cols}) leftover x ${surface_leftover_x}`)
         return [...positions, ...fill(surface_leftover_x, rotate(size))]
     }
 
     else if(isVertical(size) && fits(surface_leftover_y, rotate(size))) {
-        console.log(`Returning ${count} (${rows}x${cols}) leftover y ${surface_leftover_y}`)
+        // console.info(`Returning ${count} (${rows}x${cols}) leftover y ${surface_leftover_y}`)
         return [...positions, ...fill(surface_leftover_y, rotate(size))]
     }
     
-    console.log('(End) returning', count, surface_filled)
+    // console.info('(End) returning', count, surface_filled)
     return positions
 }
 

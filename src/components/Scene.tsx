@@ -1,9 +1,10 @@
 // import { useRef, useState } from 'react'
-import { Suspense } from 'react'
+import { Suspense, useMemo } from 'react'
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls } from '@react-three/drei'
 import { useNestingStore } from '../store/store'
 import * as THREE from "three"
+import { fill } from '../utils/fill'
 
 
 const ZERO = new THREE.Vector3(0,0,0)
@@ -15,9 +16,10 @@ const ZERO = new THREE.Vector3(0,0,0)
 export default function Scene() {
     // const [count, setCount] = useState(0)
 
-    const boxSize = new THREE.Vector3(20, 0.1, 10)
+    // const boxSize = new THREE.Vector3(20, 0.1, 10)
+    const boxSize = useNestingStore(store => store.containerSize)
     // const boxOffset = boxSize.map(dim => dim/2) as [number,number,number]
-    const boxOffset = boxSize.clone().divideScalar(2)
+    // const boxOffset = boxSize.clone().divideScalar(2)
 
     // const controlsRef = useRef()
 
@@ -26,6 +28,18 @@ export default function Scene() {
 
     const cubeMaterial = new THREE.MeshNormalMaterial()
     const boxGeometry  = new THREE.BoxGeometry(size.x, size.z, size.y)
+
+    const boxes = useMemo(() => {
+        const surface = new THREE.Box2(new THREE.Vector2(0,0), new THREE.Vector2(boxSize.x, boxSize.z))
+        const shape = new THREE.Vector2(size.x, size.y)
+        return fill(surface, shape)
+    }, [boxSize.x, boxSize.z, size.x, size.y])
+
+    // console.info({ size, boxes })
+
+
+    const test = false
+    
 
     return (
         <Canvas frameloop="demand">
@@ -47,26 +61,50 @@ export default function Scene() {
                         material={ cubeMaterial }
                     />
 
-                    {/* Render the items inside the container */}
-                    <group position={ ZERO /*boxOffset.clone().divideScalar(-1)*/ }>
+                    {/* <Box
+                        box={ new THREE.Box2(new THREE.Vector2(5,5), new THREE.Vector2(6,6)) }
+                        material={ cubeMaterial }
+                    /> */}
+
                     {
-                        [...Array(3).keys()].map(i => (
-                            // <mesh
-                            //     key={ i }
-                            //     position={ [i*(size.x + 0.1), 1, 0] }
-                            //     material={ cubeMaterial }
-                            //     geometry={ boxGeometry }
-                            // />
-                            <CubeMesh
-                                key={ i }
-                                size={ new THREE.Vector3(size.x, size.z, size.y) }
-                                position={ new THREE.Vector3(i*(size.x + 0.1), boxSize.y, 0) }
-                                material={ cubeMaterial }
-                                geometry={ boxGeometry }
-                            />
-                        ))
+                        !test &&
+                        <group position={ ZERO /*boxOffset.clone().divideScalar(-1)*/ }>
+                            {
+                                boxes.map((box,i) => (
+                                    <Box
+                                        key={ i }
+                                        box={ box }
+                                        height={ size.z + boxSize.y }
+                                        material={ cubeMaterial }
+                                    />
+                                ))
+                            }
+                        </group>
                     }
-                    </group>
+
+                    {/* Render the items inside the container */}
+                    {
+                        test &&
+                        <group position={ ZERO /*boxOffset.clone().divideScalar(-1)*/ }>
+                        {
+                            [...Array(3).keys()].map(i => (
+                                // <mesh
+                                //     key={ i }
+                                //     position={ [i*(size.x + 0.1), 1, 0] }
+                                //     material={ cubeMaterial }
+                                //     geometry={ boxGeometry }
+                                // />
+                                <CubeMesh
+                                    key={ i }
+                                    size={ new THREE.Vector3(size.x, size.z, size.y) }
+                                    position={ new THREE.Vector3(i*(size.x + 0.1), boxSize.y, 0) }
+                                    material={ cubeMaterial }
+                                    geometry={ boxGeometry }
+                                />
+                            ))
+                        }
+                        </group>
+                    }
 
                 </group>
 
@@ -100,6 +138,36 @@ function CubeMesh({ size, position, material, geometry }: CubeMeshProps) {
 
 
 
+type BoxProps = {
+    box: THREE.Box2,
+    height: number,
+    // from: THREE.Vector3,
+    // to: THREE.Vector3,
+    material: THREE.MeshNormalMaterial,
+    // geometry: THREE.BoxGeometry,
+}
+
+function Box({ box, height, material }: BoxProps) {
+
+    // const { x, y, z } = position
+    // const { x:width, y:height, z:depth } = size
+
+    // const offset = size.clone().divideScalar(2)
+    // const offset = new THREE.Vector3(size.x/2, size.y/2, size.z/2)
+
+    const margin = new THREE.Vector2(0.1, 0.1)
+    const size2d = box.max.clone().sub(box.min).sub(margin)
+    const size3d = [size2d.x, height, size2d.y]
+    const geometry = new THREE.BoxGeometry(...size3d)
+    
+    const offset = size2d.clone().divideScalar(2)
+    const position = new THREE.Vector3(box.min.x+offset.x, height/2, box.min.y+offset.y)
+
+    
+    // console.log("Rendering box:", { height, box, position, size3d, offset })
+    
+    return <mesh position={ position } material={ material } geometry={ geometry }/>
+}
 
 
 
