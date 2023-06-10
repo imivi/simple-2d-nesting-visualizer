@@ -20,6 +20,9 @@ type Store = {
     visibleBlocks: number,
     setVisibleBlocks: (n: number) => void,
 
+    showAllBlocks: boolean,
+    setShowAllBlocks: (show: boolean) => void,
+
     requiredBlocks: number,
     setRequiredBlocks: (n: number) => void,
 }
@@ -40,6 +43,9 @@ export const useNestingStore = create<Store>()(
 
                 requiredBlocks: 1,
                 setRequiredBlocks: (n) => set({ requiredBlocks: n }),
+
+                showAllBlocks: true,
+                setShowAllBlocks: (show) => set({ showAllBlocks: show }),
             }),
             { name: "nesting-store" }
         )

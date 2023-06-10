@@ -6,6 +6,7 @@ import { useNestingStore } from '../store/store'
 import * as THREE from "three"
 import { fill } from '../utils/fill'
 import Controls from './Controls'
+import { range } from '../utils/range'
 
 
 const ZERO = new THREE.Vector3(0,0,0)
@@ -26,6 +27,7 @@ export default function Scene() {
     // const boxOffset = boxSize.map(dim => dim/2) as [number,number,number]
     // const boxOffset = boxSize.clone().divideScalar(2)
 
+    const showAllBlocks = useNestingStore(store => store.showAllBlocks)
     const visibleBlocks = useNestingStore(store => store.visibleBlocks)
     // const controlsRef = useRef()
 
@@ -33,12 +35,12 @@ export default function Scene() {
     const gridSize = Math.max(boxSize.x, boxSize.z) * 2
 
     const containerMaterial = new THREE.MeshStandardMaterial({ transparent: true, wireframe: true })
-    containerMaterial.opacity = 0.3
 
     const cubeMaterial = new THREE.MeshNormalMaterial()
 
     const transparentMaterial = new THREE.MeshNormalMaterial({ transparent: true })
-    transparentMaterial.opacity = 0.3
+    transparentMaterial.opacity = 0.1
+    transparentMaterial.visible = false
     // const boxGeometry  = new THREE.BoxGeometry(size.x, size.z, size.y)
 
     const blocks = useMemo(() => {
@@ -47,17 +49,18 @@ export default function Scene() {
         return fill(surface, shape)
     }, [boxSize.x, boxSize.z, size.x, size.y])
 
-    const fullLayers = Math.floor(requiredBlocks / blocks.length)
+    const fullLayers = Math.floor(boxSize.y / size.z)
     const extraBlocks = requiredBlocks % blocks.length
     // console.log("fullLayers:", fullLayers)
     // console.log("extraBlocks:", extraBlocks)
 
     // console.info({ size, boxes })
 
+    // console.log(`range(${fullLayers}) =`, range(fullLayers))
     
 
     return <>
-        <Controls boxCount={ blocks.length }/>
+        <Controls boxCount={ blocks.length * fullLayers }/>
 
         <Canvas frameloop="demand">
             <ambientLight intensity={ 2 }/>
@@ -86,13 +89,24 @@ export default function Scene() {
 
                     <group position={ ZERO /*boxOffset.clone().divideScalar(-1)*/ }>
                         {
-                            blocks.map((box,i) => (
-                                <Box
-                                    key={ i }
-                                    box={ box }
-                                    height={ size.z + 0.1 /* + boxSize.y*/ }
-                                    material={ i < visibleBlocks ? cubeMaterial : transparentMaterial }
-                                />
+                            range(fullLayers).map(layer => (
+                                <group key={ layer } position={ new THREE.Vector3(0, layer*size.z+0.1, 0) }>
+                                {
+                                    blocks.map((box,i) => {
+                                        // Show the block if all blocks are supposed to be visible,
+                                        // or the block number is less than the maximum picked in the slider.
+                                        const blockIsVisible = showAllBlocks || (layer*blocks.length + i) < visibleBlocks
+                                        return (
+                                            <Box
+                                                key={ i }
+                                                box={ box }
+                                                height={ size.z /* + boxSize.y*/ }
+                                                material={ blockIsVisible ? cubeMaterial : transparentMaterial }
+                                            />
+                                        )
+                                    })
+                                }
+                                </group>
                             ))
                         }
                     </group>
@@ -148,9 +162,11 @@ function Box({ box, height, material }: BoxProps) {
     // const offset = size.clone().divideScalar(2)
     // const offset = new THREE.Vector3(size.x/2, size.y/2, size.z/2)
 
-    const margin = new THREE.Vector2(0.1, 0.1)
-    const size2d = box.max.clone().sub(box.min).sub(margin)
-    const size3d = [size2d.x, height, size2d.y]
+    const margin = 0.1
+
+    const margins = new THREE.Vector2(margin, margin)
+    const size2d = box.max.clone().sub(box.min).sub(margins)
+    const size3d = [size2d.x, height-margin, size2d.y]
     const geometry = new THREE.BoxGeometry(...size3d)
     
     const offset = size2d.clone().divideScalar(2)

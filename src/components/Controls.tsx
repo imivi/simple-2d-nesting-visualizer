@@ -92,6 +92,9 @@ export default function Controls({ boxCount }: Props) {
     const [c, setC] = useState(size.y.toString())
     const [orientation, setOrientation] = useState<Orientation>("flat")
 
+    const showAllBlocks    = useNestingStore(store => store.showAllBlocks)
+    const setShowAllBlocks = useNestingStore(store => store.setShowAllBlocks)
+
     const containerSize    = useNestingStore(store => store.containerSize)
     const setContainerSize = useNestingStore(store => store.setContainerSize)
 
@@ -189,8 +192,22 @@ export default function Controls({ boxCount }: Props) {
                 }
             </div>
 
-            <p>Visible blocks: { Math.min(visibleBlocks,boxCount) } / { boxCount }</p>
-            <input type="range" min={ 1 } max={ boxCount } value={ Math.min(visibleBlocks,boxCount) } onChange={ (e) => setVisibleBlocks(Number(e.target.value)) }/>
+            
+            {/* Slider to select visible blocks */}
+            <p>Block limit: { showAllBlocks ? boxCount : Math.min(visibleBlocks,boxCount) } / { boxCount }</p>
+            <input
+                type="range"
+                min={ 1 }
+                max={ boxCount }
+                value={ showAllBlocks ? boxCount : Math.min(visibleBlocks,boxCount) }
+                onChange={ (e) => { setVisibleBlocks(Number(e.target.value)); setShowAllBlocks(false) } }
+            />
+
+            <div>
+                <input type="checkbox" checked={ showAllBlocks } onChange={ () => setShowAllBlocks(!showAllBlocks) } />
+                <label>show all</label>
+            </div>
+
 
             <p>{ orientation }</p>
             <p>store.size: { [size.x, size.y, size.z].join(" x ") }</p>
@@ -226,16 +243,12 @@ const style = css`
 
     label {
         display: flex;
-        flex-direction: column;
         gap: 5px;
         place-items: center;
-
-        span {
-            opacity: 0.7;
-        }
     }
 
     input {
+        display: inline-block;
         width: 100%;
         font-family: inherit;
         font-size: inherit;
