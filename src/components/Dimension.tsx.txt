@@ -1,0 +1,28 @@
+import { css } from "@emotion/react"
+import { Vector3 } from 'three'
+
+
+type Props = {
+    from: Vector3,
+    to: Vector3,
+}
+
+export default function Dimension({ from, to }: Props) {
+
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3( -10, 0, 0 ));
+    geometry.vertices.push(new THREE.Vector3( 10, 0, 0 ));
+    
+    // Create material with desired color
+    var material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+    
+    // Create line object using geometry and material
+    var line = new THREE.Line( geometry, material );
+    
+    // Add line to the scene
+    scene.add( line );
+
+    return (
+        <line args={ [geometry, material ] }/>
+    )
+}
