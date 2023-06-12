@@ -1,6 +1,6 @@
 // import { useRef, useState } from 'react'
 import { Suspense, useMemo } from 'react'
-import { Canvas, useThree } from "@react-three/fiber"
+import { Canvas, RootState } from "@react-three/fiber"
 import { OrbitControls } from '@react-three/drei'
 import { useNestingStore } from '../store/store'
 import * as THREE from "three"
@@ -8,6 +8,7 @@ import { fill } from '../utils/fill'
 import Controls from './Controls'
 import { range } from '../utils/range'
 import { Block } from './Block'
+import { blockMaterial, containerFloorMaterial, containerMaterial } from '../threejs/materials'
 // import Camera from './Camera'
 
 
@@ -16,6 +17,8 @@ const ZERO = Object.freeze(new THREE.Vector3(0,0,0))
 // type Props = {
 //     color?: string,
 // }
+
+
 
 export default function Scene() {
     // const [count, setCount] = useState(0)
@@ -55,16 +58,16 @@ export default function Scene() {
     // const blockSize = baseBlockSize.clone().add(new THREE.Vector3(margin,margin,margin))
     
     const gridSize = Math.max(containerSize.x, containerSize.z) * 2
-    const containerMaterial = new THREE.MeshBasicMaterial({ transparent: true, wireframe: true })
-    const containerFloorMaterial = new THREE.MeshLambertMaterial({ color: "#eee" })
-
-    // const blockMaterial = new THREE.MeshNormalMaterial()
-    const blockMaterial = new THREE.MeshLambertMaterial({ color: "#1288d6" })
 
     const transparentMaterial = new THREE.MeshNormalMaterial({ transparent: true })
     transparentMaterial.opacity = 0.1
     transparentMaterial.visible = false
     // const boxGeometry  = new THREE.BoxGeometry(size.x, size.z, size.y)
+
+    const blockColor = useNestingStore(store => store.blockColor)
+    blockMaterial.color = new THREE.Color(blockColor)
+
+
 
     const blocks = useMemo(() => {
         const surface = new THREE.Box2(new THREE.Vector2(0,0), new THREE.Vector2(containerSize.x+margin, containerSize.z+margin))
@@ -118,14 +121,46 @@ export default function Scene() {
     // console.info({ size, boxes })
 
     // console.log(`range(${fullLayers}) =`, range(fullLayers))
+
+    function onLoadScene(state: RootState) {
+        // Set camera position
+        state.camera.position.set(cameraPosition.x,cameraPosition.y,cameraPosition.z)
+
+        // Set background
+        /*
+        console.log("Loading texture")
+        const texture = new THREE.TextureLoader().load("/background.jpg")
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set( 4, 4 );
+        state.scene.background = texture
+        */
+
+        // https://threejs.org/docs/#api/en/textures/CubeTexture
+        const loader = new THREE.CubeTextureLoader()
+        loader.setPath("/pano/")
+        const textureCube = loader.load([
+            "a.jpg",
+            "b.jpg",
+            "c.jpg",
+            "d.jpg",
+            "e.jpg",
+            "f.jpg",
+        ])
+        // const backgroundMaterial = new THREE.MeshBasicMaterial({ color: 0xfff, envMap: textureCube })
+        state.scene.background = textureCube
+        
+        // state.scene.background = new THREE.Color("#fff")
+    }
     
 
     return <>
-        <Controls boxCount={ blocks.length * fullLayers } blockSize={ blockSize }/>
+        <Controls boxCount={ blocks.length * fullLayers }/>
 
         <Canvas
             frameloop="demand"
-            onCreated={ (state) => state.camera.position.set(cameraPosition.x,cameraPosition.y,cameraPosition.z) }
+            onCreated={ onLoadScene }
+            // camera={{ position: cameraPosition, fov: 35 }}
         >
 
             {/* <Camera/> */}

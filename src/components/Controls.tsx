@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { css, useTheme } from "@emotion/react"
+import { css } from "@emotion/react"
 import { Orientation, useNestingStore } from '../store/store'
 import { Vector3 } from 'three'
 import NumberInput from './NumberInput'
-import { useThree } from '@react-three/fiber'
+import { HexColorPicker } from "react-colorful"
+// import { useThree } from '@react-three/fiber'
 
 
 
@@ -78,10 +79,10 @@ function V3(v: { x:number, y: number, z:number }) {
 
 type Props = {
     boxCount: number,
-    blockSize: Vector3,
+    // blockSize: Vector3,
 }
 
-export default function Controls({ boxCount, blockSize }: Props) {
+export default function Controls({ boxCount }: Props) {
 
     
     const size = useNestingStore(store => store.size)
@@ -106,6 +107,9 @@ export default function Controls({ boxCount, blockSize }: Props) {
 
     const visibleBlocks    = useNestingStore(store => store.visibleBlocks)
     const setVisibleBlocks = useNestingStore(store => store.setVisibleBlocks)
+
+    const blockColor    = useNestingStore(store => store.blockColor)
+    const setBlockColor = useNestingStore(store => store.setBlockColor)
 
     // const requiredBlocks    = useNestingStore(store => store.requiredBlocks)
     // const setRequiredBlocks = useNestingStore(store => store.setRequiredBlocks)
@@ -186,6 +190,8 @@ export default function Controls({ boxCount, blockSize }: Props) {
                 <span>Margin</span>
                 <NumberInput defaultValue={ margin } onValidChange={ (n) => setMargin(n) }/>
             </label>
+
+            <HexColorPicker color={ blockColor } onChange={ setBlockColor }/>
 
             <div className="rotate-icons">
                 {

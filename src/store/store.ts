@@ -38,9 +38,13 @@ type Store = {
     margin: number,
     setMargin: (n: number) => void,
 
+    blockColor: string,
+    setBlockColor: (color: string) => void,
+
     // requiredBlocks: number,
     // setRequiredBlocks: (n: number) => void,
 }
+
 
 // https://github.com/pmndrs/zustand#typescript-usage
 export const useNestingStore = create<Store>()(
@@ -67,7 +71,10 @@ export const useNestingStore = create<Store>()(
 
                 margin: 0,
                 setMargin: (margin) => set({ margin }),
-                
+
+                blockColor: "#1288d6",
+                setBlockColor: (blockColor) => set({ blockColor }),
+
                 // requiredBlocks: 1,
                 // setRequiredBlocks: (n) => set({ requiredBlocks: n }),
             }),
