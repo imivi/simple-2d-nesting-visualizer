@@ -19,8 +19,9 @@ export default function NumberInput(props: Props) {
         setTextValue(text)
 
         const newValue = Number(text)
+        const numberIsValid = !isNaN(newValue)
 
-        if(newValue) {
+        if(numberIsValid) {
             onValidChange(newValue)
         }
     }

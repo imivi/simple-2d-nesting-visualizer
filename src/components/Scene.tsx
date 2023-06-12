@@ -1,15 +1,17 @@
 // import { useRef, useState } from 'react'
 import { Suspense, useMemo } from 'react'
-import { Canvas } from "@react-three/fiber"
+import { Canvas, useThree } from "@react-three/fiber"
 import { OrbitControls } from '@react-three/drei'
 import { useNestingStore } from '../store/store'
 import * as THREE from "three"
 import { fill } from '../utils/fill'
 import Controls from './Controls'
 import { range } from '../utils/range'
+import { Block } from './Block'
+// import Camera from './Camera'
 
 
-const ZERO = new THREE.Vector3(0,0,0)
+const ZERO = Object.freeze(new THREE.Vector3(0,0,0))
 
 // type Props = {
 //     color?: string,
@@ -20,23 +22,44 @@ export default function Scene() {
 
     // const requiredBlocks = useNestingStore(store => store.requiredBlocks)
 
-    // const boxSize = new THREE.Vector3(20, 0.1, 10)
-    const boxSize = useNestingStore(store => store.containerSize)
-    const { x=10, y=1, z=10 } = boxSize
-    const defaultBoxSize = new THREE.Vector3(x,y,z)
-    // const boxOffset = boxSize.map(dim => dim/2) as [number,number,number]
-    // const boxOffset = boxSize.clone().divideScalar(2)
+    // const containerSize = new THREE.Vector3(20, 0.1, 10)
+    const cameraPosition = useNestingStore(store => store.cameraPosition)
+    // const cameraPosition = new THREE.Vector3(100,10,10)
+
+    const containerSize = useNestingStore(store => store.containerSize)
+    const { x=10, y=1, z=10 } = containerSize
+    const defaultcontainerSize = new THREE.Vector3(x,y,z)
+    // const boxOffset = containerSize.map(dim => dim/2) as [number,number,number]
+    // const boxOffset = containerSize.clone().divideScalar(2)
 
     const showAllBlocks = useNestingStore(store => store.showAllBlocks)
     const visibleBlocks = useNestingStore(store => store.visibleBlocks)
     // const controlsRef = useRef()
 
-    const size = useNestingStore(store => store.size)
-    const gridSize = Math.max(boxSize.x, boxSize.z) * 2
+    const baseBlockSize = useNestingStore(store => store.size)
+    const margin = useNestingStore(store => store.margin)
+    let blockSize = baseBlockSize
+    try {
+        // console.log('baseBlockSize:', baseBlockSize)
+        const { x, y, z } = baseBlockSize
+        blockSize = new THREE.Vector3(x,y,z).add(new THREE.Vector3(margin,margin,margin))
+    }
+    catch (error) {
+        // console.log('blockSize:', blockSize)
+        const size = new THREE.Vector3(x, y, z)
+        console.log('baseBlockSize:', size,
+            size.add(new THREE.Vector3(margin,margin,margin))
+        )
+        // console.error(error)
+    }
+    // const blockSize = baseBlockSize.clone().add(new THREE.Vector3(margin,margin,margin))
+    
+    const gridSize = Math.max(containerSize.x, containerSize.z) * 2
+    const containerMaterial = new THREE.MeshBasicMaterial({ transparent: true, wireframe: true })
+    const containerFloorMaterial = new THREE.MeshLambertMaterial({ color: "#eee" })
 
-    const containerMaterial = new THREE.MeshStandardMaterial({ transparent: true, wireframe: true })
-
-    const cubeMaterial = new THREE.MeshNormalMaterial()
+    // const blockMaterial = new THREE.MeshNormalMaterial()
+    const blockMaterial = new THREE.MeshLambertMaterial({ color: "#1288d6" })
 
     const transparentMaterial = new THREE.MeshNormalMaterial({ transparent: true })
     transparentMaterial.opacity = 0.1
@@ -44,8 +67,8 @@ export default function Scene() {
     // const boxGeometry  = new THREE.BoxGeometry(size.x, size.z, size.y)
 
     const blocks = useMemo(() => {
-        const surface = new THREE.Box2(new THREE.Vector2(0,0), new THREE.Vector2(boxSize.x, boxSize.z))
-        const shape = new THREE.Vector2(size.x, size.y)
+        const surface = new THREE.Box2(new THREE.Vector2(0,0), new THREE.Vector2(containerSize.x+margin, containerSize.z+margin))
+        const shape = new THREE.Vector2(blockSize.x, blockSize.y)
         const blocks = fill(surface, shape)
 
         // (optimization)
@@ -56,15 +79,17 @@ export default function Scene() {
         const blocksWithGeometries: { box: THREE.Box2, geometry: THREE.BoxGeometry }[] = []
         for(const block of blocks) {
 
-            const blockSize = block.max.clone().sub(block.min)
-            const key = JSON.stringify(blockSize)
+            const thisBlockSize = block.max.clone().sub(block.min)
+            const key = JSON.stringify(thisBlockSize)
 
             // Create a new BoxGeometry if necessary
             if(!(key in geometries)) {
-                const margin = 0.1
-                const margins = new THREE.Vector2(margin, margin)
+                // If the margin is zero, reduce the block size anyway by 0.1 so that single blocks are visible
+
+                const margins = margin>0 ? new THREE.Vector2(margin, margin) : new THREE.Vector2(0.1,0.1)
                 const size2d = block.max.clone().sub(block.min).sub(margins)
-                const size3d = [size2d.x, size.z-margin, size2d.y]
+                const verticalMargin = margin === 0 ? 0.1 : margin
+                const size3d = [size2d.x, blockSize.z-verticalMargin, size2d.y]
                 const geometry = new THREE.BoxGeometry(...size3d)
                 geometries[key] = geometry
             }
@@ -76,14 +101,14 @@ export default function Scene() {
         // console.info('Geometries:', Object.keys(geometries).length, Object.keys(geometries))
 
         return blocksWithGeometries
-    }, [boxSize.x, boxSize.z, size.x, size.y, size.z])
+    }, [containerSize.x, containerSize.z, blockSize.x, blockSize.y, blockSize.z, margin])
 
     // console.log("Blocks:", blocks)
 
 
     // Calculate how many layers can fit inside the container,
     // but always show at least 1 layer.
-    const fullLayers = Math.max(Math.floor(boxSize.y / size.z), 1)
+    const fullLayers = Math.max(Math.floor(containerSize.y / blockSize.z), 1)
 
 
     // const extraBlocks = requiredBlocks % blocks.length
@@ -96,11 +121,19 @@ export default function Scene() {
     
 
     return <>
-        <Controls boxCount={ blocks.length * fullLayers }/>
+        <Controls boxCount={ blocks.length * fullLayers } blockSize={ blockSize }/>
 
-        <Canvas frameloop="demand">
-            <ambientLight intensity={ 2 }/>
-            <spotLight position={[1, 6, 1.5]} angle={0.2} penumbra={1} intensity={2.5} castShadow shadow-mapSize={[2048, 2048]} />
+        <Canvas
+            frameloop="demand"
+            onCreated={ (state) => state.camera.position.set(cameraPosition.x,cameraPosition.y,cameraPosition.z) }
+        >
+
+            {/* <Camera/> */}
+            
+            <ambientLight intensity={ 0.1 }/>
+            <directionalLight position={ new THREE.Vector3(40,20,50) } intensity={ 1 } />
+            {/* <spotLight position={[1, 30, 1.5]} angle={0.5} penumbra={1} intensity={0.5} castShadow shadow-mapSize={[2048, 2048]} /> */}
+
             {/* <PerspectiveCamera makeDefault/> */}
             <OrbitControls/>
             <gridHelper args={ [gridSize, gridSize, "#bbb", "#666"] }/>
@@ -111,22 +144,22 @@ export default function Scene() {
                     {/* Render the container */}
                     <CubeMesh
                         position={ new THREE.Vector3(0, 0.1, 0) }
-                        size={ defaultBoxSize }
-                        geometry={ new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z) }
+                        size={ defaultcontainerSize }
+                        geometry={ new THREE.BoxGeometry(containerSize.x, containerSize.y, containerSize.z) }
                         material={ containerMaterial }
                     />
                     {/* Render the container floor */}
                     <CubeMesh
                         position={ new THREE.Vector3(0, 0, 0) }
-                        size={ new THREE.Vector3(boxSize.x, 0.1, boxSize.z) }
-                        geometry={ new THREE.BoxGeometry(boxSize.x, 0.1, boxSize.z) }
-                        material={ cubeMaterial }
+                        size={ new THREE.Vector3(containerSize.x, 0.1, containerSize.z) }
+                        geometry={ new THREE.BoxGeometry(containerSize.x, 0.1, containerSize.z) }
+                        material={ containerFloorMaterial }
                     />
 
                     <group position={ ZERO /*boxOffset.clone().divideScalar(-1)*/ }>
                         {
                             range(fullLayers).map(layer => (
-                                <group key={ layer } position={ new THREE.Vector3(0, layer*size.z+0.1, 0) }>
+                                <group key={ layer } position={ new THREE.Vector3(0, layer*blockSize.z+0.1, 0) }>
                                 {
                                     blocks.map((block,i) => {
                                         // Show the block if all blocks are supposed to be visible,
@@ -136,9 +169,10 @@ export default function Scene() {
                                             <Block
                                                 key={ i }
                                                 box={ block.box }
-                                                height={ size.z /* + boxSize.y*/ }
-                                                material={ blockIsVisible ? cubeMaterial : transparentMaterial }
+                                                height={ blockSize.z /* + containerSize.y*/ }
+                                                material={ blockIsVisible ? blockMaterial : transparentMaterial }
                                                 geometry={ block.geometry }
+                                                margin={ margin }
                                             />
                                         )
                                     })
@@ -160,7 +194,7 @@ export default function Scene() {
 type CubeMeshProps = {
     position: THREE.Vector3,
     size: THREE.Vector3,
-    material: THREE.MeshNormalMaterial,
+    material: THREE.Material,
     geometry: THREE.BoxGeometry,
 }
 
@@ -180,35 +214,6 @@ function CubeMesh({ size, position, material, geometry }: CubeMeshProps) {
 }
 
 
-
-type BlockProps = {
-    box: THREE.Box2,
-    height: number,
-    material: THREE.MeshNormalMaterial,
-    geometry: THREE.BoxGeometry,
-}
-
-function Block({ box, height, material, geometry }: BlockProps) {
-
-    // const { x, y, z } = position
-    // const { x:width, y:height, z:depth } = size
-
-    // const offset = size.clone().divideScalar(2)
-    // const offset = new THREE.Vector3(size.x/2, size.y/2, size.z/2)
-
-    const margin = 0.1
-
-    const margins = new THREE.Vector2(margin, margin)
-    const size2d = box.max.clone().sub(box.min).sub(margins)
-    
-    const offset = size2d.clone().divideScalar(2)
-    const position = new THREE.Vector3(box.min.x+offset.x, height/2, box.min.y+offset.y)
-
-    
-    // console.log("Rendering box:", { height, box, position, size3d, offset })
-    
-    return <mesh position={ position } material={ material } geometry={ geometry }/>
-}
 
 
 /*

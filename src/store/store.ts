@@ -10,6 +10,12 @@ import { Vector3 } from "three"
 // }
 
 
+
+export type Orientation =
+    "flat"   | "up"   | "side" |
+    "flat_r" | "up_r" | "side_r"
+
+
 type Store = {
     size: Vector3,
     setSize: (v: Vector3) => void,
@@ -23,6 +29,15 @@ type Store = {
     showAllBlocks: boolean,
     setShowAllBlocks: (show: boolean) => void,
 
+    orientation: Orientation,
+    setOrientation: (orientation: Orientation) => void,
+
+    cameraPosition: Vector3,
+    setCameraPosition: (position: Vector3) => void,
+
+    margin: number,
+    setMargin: (n: number) => void,
+
     // requiredBlocks: number,
     // setRequiredBlocks: (n: number) => void,
 }
@@ -32,10 +47,10 @@ export const useNestingStore = create<Store>()(
     devtools(
         persist(
             (set) => ({
-                size: new Vector3(30, 10, 5),
+                size: new Vector3(3, 4, 5),
                 setSize: (size) => set({ size }),
 
-                containerSize: new Vector3(20, 0.1, 10),
+                containerSize: new Vector3(35, 20, 18),
                 setContainerSize: (containerSize) => set({ containerSize }),
 
                 visibleBlocks: 1,
@@ -44,6 +59,15 @@ export const useNestingStore = create<Store>()(
                 showAllBlocks: true,
                 setShowAllBlocks: (show) => set({ showAllBlocks: show }),
 
+                orientation: "side_r",
+                setOrientation: (orientation) => set({ orientation }),
+
+                cameraPosition: new Vector3(30, 30, 40),
+                setCameraPosition: (cameraPosition) => set({ cameraPosition }),
+
+                margin: 0,
+                setMargin: (margin) => set({ margin }),
+                
                 // requiredBlocks: 1,
                 // setRequiredBlocks: (n) => set({ requiredBlocks: n }),
             }),

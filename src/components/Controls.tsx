@@ -1,13 +1,11 @@
 import { useState } from 'react'
-import { css } from "@emotion/react"
-import { useNestingStore } from '../store/store'
+import { css, useTheme } from "@emotion/react"
+import { Orientation, useNestingStore } from '../store/store'
 import { Vector3 } from 'three'
 import NumberInput from './NumberInput'
+import { useThree } from '@react-three/fiber'
 
 
-type Orientation =
-    "flat"   | "up"   | "side" |
-    "flat_r" | "up_r" | "side_r"
 
 
 const icons: { [key in Orientation]: string } = {
@@ -80,17 +78,25 @@ function V3(v: { x:number, y: number, z:number }) {
 
 type Props = {
     boxCount: number,
+    blockSize: Vector3,
 }
 
-export default function Controls({ boxCount }: Props) {
+export default function Controls({ boxCount, blockSize }: Props) {
 
+    
     const size = useNestingStore(store => store.size)
     const setSize = useNestingStore(store => store.setSize)
+
+    const margin = useNestingStore(store => store.margin)
+    const setMargin = useNestingStore(store => store.setMargin)
 
     const [a, setA] = useState(size.x.toString())
     const [b, setB] = useState(size.z.toString())
     const [c, setC] = useState(size.y.toString())
-    const [orientation, setOrientation] = useState<Orientation>("flat")
+
+    // const [orientation, setOrientation] = useState<Orientation>("side_r")
+    const orientation      = useNestingStore(store => store.orientation)
+    const setOrientation   = useNestingStore(store => store.setOrientation)
 
     const showAllBlocks    = useNestingStore(store => store.showAllBlocks)
     const setShowAllBlocks = useNestingStore(store => store.setShowAllBlocks)
@@ -161,14 +167,14 @@ export default function Controls({ boxCount }: Props) {
             </label> */}
 
             <div className="inputs">
-                <label>Box</label>
+                <label>Container</label>
                 <NumberInput defaultValue={ containerSize.x } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, x: n })) }/>
                 <span>x</span>
                 <NumberInput defaultValue={ containerSize.z } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, z: n })) }/>
                 <span>x</span>
                 <NumberInput defaultValue={ containerSize.y } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, y: n })) }/>
 
-                <label>Shape</label>
+                <label>Block</label>
                 <input type="text" value={ a } onChange={ (e) => handleInput(e.target.value, "x") }/>
                 <span>x</span>
                 <input type="text" value={ b } onChange={ (e) => handleInput(e.target.value, "y") }/>
@@ -176,13 +182,18 @@ export default function Controls({ boxCount }: Props) {
                 <input type="text" value={ c } onChange={ (e) => handleInput(e.target.value, "z") }/>
             </div>
 
+            <label>
+                <span>Margin</span>
+                <NumberInput defaultValue={ margin } onValidChange={ (n) => setMargin(n) }/>
+            </label>
+
             <div className="rotate-icons">
                 {
                     Object.entries(icons).map(([icon_orientation,url]) => (
                         <div key={ url }>
                             <img
                                 onClick={ () => handleSetOrientation(icon_orientation as Orientation) }
-                                src={ "/icons/"+url }
+                                src={ "icons/"+url }
                                 alt={ url }
                                 data-active={ orientation === icon_orientation }
                             />
@@ -209,10 +220,11 @@ export default function Controls({ boxCount }: Props) {
                 </label>
             </div>
 
+            {/* <div>margin: { margin }</div> */}
+            {/* <div>blockSize: { [blockSize.x, blockSize.y, blockSize.z].join(" x ") }</div> */}
 
-
-            <p>{ orientation }</p>
-            <p>store.size: { [size.x, size.y, size.z].join(" x ") }</p>
+            {/* <p>Orientation: { orientation }</p>
+            <p>store.size: { [size.x, size.y, size.z].join(" x ") }</p> */}
 
         </div>
     )
