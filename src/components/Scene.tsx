@@ -138,7 +138,7 @@ export default function Scene() {
 
         // https://threejs.org/docs/#api/en/textures/CubeTexture
         const loader = new THREE.CubeTextureLoader()
-        loader.setPath("/pano/")
+        loader.setPath("pano/")
         const textureCube = loader.load([
             "a.jpg",
             "b.jpg",
