@@ -57,7 +57,7 @@ export default function Scene() {
     }
     // const blockSize = baseBlockSize.clone().add(new THREE.Vector3(margin,margin,margin))
     
-    const gridSize = Math.max(containerSize.x, containerSize.z) * 2
+    // const gridSize = Math.max(containerSize.x, containerSize.z) * 2
 
     const transparentMaterial = new THREE.MeshNormalMaterial({ transparent: true })
     transparentMaterial.opacity = 0.1
@@ -155,7 +155,7 @@ export default function Scene() {
     
 
     return <>
-        <Controls boxCount={ blocks.length * fullLayers }/>
+        <Controls  blocksPerLayer={ blocks.length } layerCount={ fullLayers }/>
 
         <Canvas
             frameloop="demand"
@@ -171,14 +171,14 @@ export default function Scene() {
 
             {/* <PerspectiveCamera makeDefault/> */}
             <OrbitControls/>
-            <gridHelper args={ [gridSize, gridSize, "#bbb", "#666"] }/>
+            {/* <gridHelper args={ [gridSize, gridSize, "#bbb", "#666"] } position={ [containerSize.x,0,containerSize.z] }/> */}
             <Suspense fallback={ <div>Loading...</div> }>
 
                 <group position={ ZERO }>
 
                     {/* Render the container */}
                     <CubeMesh
-                        position={ new THREE.Vector3(0, 0.1, 0) }
+                        position={ new THREE.Vector3(0, 0.2, 0) }
                         size={ defaultcontainerSize }
                         geometry={ new THREE.BoxGeometry(containerSize.x, containerSize.y, containerSize.z) }
                         material={ containerMaterial }

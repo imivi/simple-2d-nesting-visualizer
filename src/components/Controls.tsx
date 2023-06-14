@@ -4,6 +4,7 @@ import { Orientation, useNestingStore } from '../store/store'
 import { Vector3 } from 'three'
 import NumberInput from './NumberInput'
 import { HexColorPicker } from "react-colorful"
+import { useTranslate } from '../hooks/useTranslate'
 // import { useThree } from '@react-three/fiber'
 
 
@@ -78,13 +79,19 @@ function V3(v: { x:number, y: number, z:number }) {
 }
 
 type Props = {
-    boxCount: number,
+    layerCount: number,
+    blocksPerLayer: number,
     // blockSize: Vector3,
 }
 
-export default function Controls({ boxCount }: Props) {
+export default function Controls({ blocksPerLayer, layerCount }: Props) {
 
+    const blocksCount = blocksPerLayer*layerCount
+
+    const { language, translate } = useTranslate()
     
+    const setLanguage = useNestingStore(store => store.setLanguage)
+
     const size = useNestingStore(store => store.size)
     const setSize = useNestingStore(store => store.setSize)
 
@@ -163,7 +170,13 @@ export default function Controls({ boxCount }: Props) {
 
     return (
         <div css={ style }>
-            <h2>Simple 2D nesting</h2>
+
+            <div className="langbar">
+                <button onClick={ () => setLanguage("en") } data-active={ language==="en" }>en</button>
+                <button onClick={ () => setLanguage("it") } data-active={ language==="it" }>it</button>
+            </div>
+            
+            <h2>{ translate("title") }</h2>
 
             {/* <label>
                 <span>Required block number</span>
@@ -171,14 +184,14 @@ export default function Controls({ boxCount }: Props) {
             </label> */}
 
             <div className="inputs">
-                <label>Container</label>
+                <label>{ translate("container") }</label>
                 <NumberInput defaultValue={ containerSize.x } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, x: n })) }/>
                 <span>x</span>
                 <NumberInput defaultValue={ containerSize.z } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, z: n })) }/>
                 <span>x</span>
                 <NumberInput defaultValue={ containerSize.y } onValidChange={ (n) => setContainerSize(V3({ ...containerSize, y: n })) }/>
 
-                <label>Block</label>
+                <label>{ translate("block") }</label>
                 <input type="text" value={ a } onChange={ (e) => handleInput(e.target.value, "x") }/>
                 <span>x</span>
                 <input type="text" value={ b } onChange={ (e) => handleInput(e.target.value, "y") }/>
@@ -187,7 +200,7 @@ export default function Controls({ boxCount }: Props) {
             </div>
 
             <label>
-                <span>Margin</span>
+                <span>{ translate("margin") }</span>
                 <NumberInput defaultValue={ margin } onValidChange={ (n) => setMargin(n) }/>
             </label>
 
@@ -212,17 +225,18 @@ export default function Controls({ boxCount }: Props) {
             
             {/* Slider to select visible blocks */}
             <div>
-                <div>Block limit: { showAllBlocks ? boxCount : Math.min(visibleBlocks,boxCount) } / { boxCount }</div>
+                <div>{ blocksPerLayer } { translate("blocks") } x { layerCount } { translate("layers") }</div>
+                <div>{ translate("block_limit") } { showAllBlocks ? blocksCount : Math.min(visibleBlocks,blocksCount) } / { blocksCount }</div>
                 <input
                     type="range"
                     min={ 1 }
-                    max={ boxCount }
-                    value={ showAllBlocks ? boxCount : Math.min(visibleBlocks,boxCount) }
+                    max={ blocksCount }
+                    value={ showAllBlocks ? blocksCount : Math.min(visibleBlocks,blocksCount) }
                     onChange={ (e) => { setVisibleBlocks(Number(e.target.value)); setShowAllBlocks(false) } }
                 />
                 <label className='show-all-blocks'>
                     <input type="checkbox" checked={ showAllBlocks } onChange={ () => setShowAllBlocks(!showAllBlocks) } />
-                    <span>show all blocks</span>
+                    <span>{ translate("show_all_blocks") }</span>
                 </label>
             </div>
 
@@ -247,7 +261,7 @@ const style = css`
     border-radius: 10px;
     /* border: 1px solid #222; */
     box-shadow: 0 5px 10px 5px rgba(0,0,0, 0.1);
-    max-width: 300px;
+    max-width: 350px;
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -259,6 +273,21 @@ const style = css`
         display: grid;
         grid-template-columns: 1fr 1fr auto 1fr auto 1fr;
         row-gap: 1rem;
+    }
+
+    .langbar {
+        button {
+            display: inline-block;
+            min-width: 3rem;
+            font-family: inherit;
+            font-size: inherit;
+            border-radius: 0;
+            border: none;
+        }
+        button[data-active=true] {
+            color: dodgerblue;
+            font-weight: bold;
+        }
     }
 
     label {

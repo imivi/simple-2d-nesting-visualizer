@@ -16,7 +16,14 @@ export type Orientation =
     "flat_r" | "up_r" | "side_r"
 
 
+export type Language = 'it' | 'en'
+
+
 type Store = {
+
+    language: Language,
+    setLanguage: (language: Language) => void,
+    
     size: Vector3,
     setSize: (v: Vector3) => void,
 
@@ -74,6 +81,9 @@ export const useNestingStore = create<Store>()(
 
                 blockColor: "#1288d6",
                 setBlockColor: (blockColor) => set({ blockColor }),
+
+                language: 'en',
+                setLanguage: (language) => set({ language }),
 
                 // requiredBlocks: 1,
                 // setRequiredBlocks: (n) => set({ requiredBlocks: n }),
